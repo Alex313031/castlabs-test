@@ -1,6 +1,7 @@
 {
   "name": "castlabs-test",
-  "version": "0.0.2",
+  "productName": "CastLabs Test App",
+  "version": "0.0.3",
   "description": "CastLabs Electron Test App",
   "main": "./app.js",
   "scripts": {
@@ -11,8 +12,11 @@
   },
   "author": "Alex313031 <alex313031@gmail.com>",
   "license": "MIT",
+  "dependencies": {
+    "@electron/remote": "2.1.2"
+  },
   "devDependencies": {
-    "electron": "git+https://github.com/castlabs/electron-releases#v28.1.3+wvcus",
+    "electron": "git+https://github.com/castlabs/electron-releases#v29.0.1+wvcus",
     "rimraf": "3.0.2"
   }
 }

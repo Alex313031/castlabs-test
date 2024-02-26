@@ -1,15 +1,33 @@
-const { app, components, BrowserWindow, Menu } = require('electron');
-
+const { app, BrowserWindow, components, dialog, Menu, nativeTheme } = require('electron');
+const path = require('path');
 let mainWindow;
+
+const appName = app.getName();
+const appVersion = app.getVersion();
+
+require('@electron/remote/main').initialize();
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
-    autoHideMenuBar: false
+    title: appName + ' v' + appVersion,
+    useContentSize: true,
+    autoHideMenuBar: false,
+    darkTheme: true,
+    webPreferences: {
+      nodeIntegration: true,
+      nodeIntegrationInWorker: true,
+      contextIsolation: false,
+      sandbox: false,
+      experimentalFeatures: true,
+      webviewTag: true,
+      devTools: true,
+      preload: path.join(__dirname, 'preload.js')
+    },
   });
-
-  // Create The Menubar
-  Menu.setApplicationMenu(Menu.buildFromTemplate([{
-    label: 'Test App',
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+  {
+    role: 'fileMenu',
+    label: 'App',
     submenu: [
       {
         label: 'Go Back',
@@ -27,6 +45,7 @@ async function createWindow() {
       },
       {
         label: 'Restart App',
+        accelerator: 'CmdorCtrl+Alt+R',
         click() {
           app.relaunch();
           app.quit();
@@ -36,23 +55,43 @@ async function createWindow() {
         label: 'Quit App',
         role: 'quit',
       }
-    ]}
+    ]
+  },
+  { role: 'editMenu' },
+  { role: 'viewMenu' },
+  { role: 'windowMenu' },
+  {
+    role: 'help',
+    submenu: [
+	  {
+        label: 'About App',
+        accelerator: 'CmdorCtrl+Alt+A',
+        click() {
+          const info = [
+            appName + ' v' + appVersion
+          ]
+          dialog.showMessageBox({
+            type: 'info',
+            title: 'About ' + appName,
+            message: info.join('\n'),
+            buttons: [('Ok')]
+          });
+        }
+      }
+    ]
+  }
   ]));
-
-  mainWindow.loadURL('https://www.google.com/');
+  require('@electron/remote/main').enable(mainWindow.webContents);
+  nativeTheme.themeSource = 'dark';
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
 }
 
 app.whenReady().then(async () => {
-  // Initialize Widevine
   await components.whenReady();
   console.log('WidevineCDM component ready.\n Info:', components.status(), '\n');
-  
   createWindow();
 });
 
-// Quit when all windows are closed.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
